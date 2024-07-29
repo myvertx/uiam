@@ -116,32 +116,36 @@ public class WebVerticle extends AbstractWebVerticle {
                             .build());
                 } else {
                     String newAuthCode = RandomEx.random1(32);
-                    redisApi.setex(clientAuthCodeRedisKey, String.valueOf(mainProperties.getAuthCodeExpiresIn().getSeconds()), newAuthCode)
-                            .onSuccess(res -> {
-                                redirect(routingContext, redirectUri, OidcV10AuthenticationSuccessRo.builder()
-                                        .code(newAuthCode)
-                                        .state(to.getState())
-                                        .iss(mainProperties.getIss())
-                                        .build());
-
-                            }).onFailure(err -> {
+                    redisApi.setex(clientAuthCodeRedisKey,
+                            String.valueOf(mainProperties.getAuthCodeExpiresIn().getSeconds()),
+                            newAuthCode).onSuccess(
+                                    res -> redirect(routingContext, redirectUri,
+                                            OidcV10AuthenticationSuccessRo.builder()
+                                                    .code(newAuthCode)
+                                                    .state(to.getState())
+                                                    .iss(mainProperties.getIss())
+                                                    .build()))
+                            .onFailure(err -> {
                                 String msg = "设置授权码失败(" + clientId + "," + redirectUri + ")";
+                                log.error(msg);
                                 redirect(routingContext, redirectUri, OidcV10AuthenticationErrorRo.builder()
                                         .error(OidcV10AuthenticationErrorDic.invalid_request.name())
+                                        .error_description(msg)
                                         .build());
                             });
                 }
             }).onFailure(err -> {
                 String msg = "设置授权码失败(" + clientId + "," + redirectUri + ")";
+                log.error(msg);
                 redirect(routingContext, redirectUri, OidcV10AuthenticationErrorRo.builder()
                         .error(OidcV10AuthenticationErrorDic.invalid_request.name())
+                        .error_description(msg)
                         .build());
             });
-        }).onFailure(err -> {
-            redirect(routingContext, redirectUri, OidcV10AuthenticationErrorRo.builder()
-                    .error(OidcV10AuthenticationErrorDic.invalid_request.name())
-                    .build());
-        });
+        }).onFailure(err -> redirect(routingContext, redirectUri,
+                OidcV10AuthenticationErrorRo.builder()
+                        .error(OidcV10AuthenticationErrorDic.invalid_request.name())
+                        .build()));
     }
 
     @SneakyThrows
