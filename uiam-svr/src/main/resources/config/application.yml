@@ -1,0 +1,6 @@
+web:
+  config:
+    isLogging: true
+    server:
+      port: 19070
+      logActivity: true

@@ -1,0 +1,145 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>myvertx.uiam</groupId>
+    <artifactId>uiam</artifactId>
+    <version>3.0.0</version>
+    <packaging>pom</packaging>
+    <name>uiam</name>
+    <description>统一身份认证管理</description>
+    <modules>
+        <module>uiam-svr</module>
+    </modules>
+
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <wheel.version>3.5.41</wheel.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.github.rebue.wheel</groupId>
+                <artifactId>wheel</artifactId>
+                <version>${wheel.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <url>https://github.com/myvertx/uiam</url>
+    <developers>
+        <developer>
+            <name>zbz</name>
+            <email>nnzbz@qq.com</email>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:https://github.com/myvertx/uiam</connection>
+        <developerConnection>scm:git:https://github.com/myvertx/uiam.git</developerConnection>
+        <url>https://github.com/myvertx/uiam.git</url>
+    </scm>
+
+    <profiles>
+        <!-- 部署私服 -->
+        <profile>
+            <id>deploy-private</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>my-snapshots</id>
+                    <name>my-snapshots</name>
+                    <url>${my-repository.url}</url>
+                    <uniqueVersion>true</uniqueVersion>
+                </snapshotRepository>
+                <repository>
+                    <id>my-releases</id>
+                    <name>my-releases</name>
+                    <url>${my-repository.url}</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+
+        <!-- 部署到中央仓库 -->
+        <profile>
+            <id>deploy-public</id>
+            <build>
+                <plugins>
+                    <!-- Sonatype中央仓库发布插件 -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.4.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>oss-new</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                        </configuration>
+                    </plugin>
+
+                    <!-- 创建源码包 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- 创建文档包 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.6.3</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- 部署时用GPG数字签名 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- 指定密钥的名称(可能会有多个生成的密钥) -->
+                                    <keyname>${gpg.keyname}</keyname>
+                                    <!-- 如果gpg服务有密钥，在settings.xml文件中配置 -->
+                                    <passphraseServerId>gpg</passphraseServerId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
